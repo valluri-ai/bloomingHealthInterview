@@ -340,148 +340,6 @@ Each prompt is modeled along four parallel dimensions:
 
 This is the reason the graph explorer is useful. The same prompt can be inspected from multiple angles without flattening away important context.
 
-## How The App Works
-
-### Tenants
-
-The UI has one active tenant at a time.
-
-Built-ins:
-- `12 Prompt Sample`
-- `Benchmark 1K`
-
-You can also create new empty tenants. Once selected, the tenant becomes app state and every prompt-scoped request is sent with `X-Tenant-Id`.
-
-### UI Walkthrough
-
-The UI is organized around six main tabs.
-
-#### Load Prompts
-
-Use this when you want to ingest data into the active tenant.
-
-You can:
-- paste a JSON array of prompts
-- upload a `.json` file from disk
-- validate the payload before writing anything
-- ingest validated prompts into Neo4j and the configured prompt-document store
-
-Good ways to test it:
-- select `12 Prompt Sample` or `Benchmark 1K` if you just want to explore existing data
-- create a new tenant if you want a clean workspace
-- upload [`tmp/benchmark-dataset-1000.json`](tmp/benchmark-dataset-1000.json) if you want to test large-tenant ingest yourself
-
-#### Generate Embeddings
-
-Use this after loading prompts into a tenant.
-
-This tab:
-- generates embeddings for all prompts in the active tenant or a selected subset
-- stores the vectors back onto prompt nodes in Neo4j
-- prepares the tenant for semantic search, similar-prompt lookup, and duplicate clustering
-
-#### Similar Prompts
-
-Use this to start from one known prompt id and inspect its nearest semantic neighbors.
-
-This is the quickest way to answer:
-- “what other prompts look like `verification.identity`?”
-- “did we accidentally create a near-duplicate under another family or category?”
-
-#### Semantic Search
-
-Use this when you know the meaning you want but not the prompt id.
-
-This tab:
-- accepts free text like `how to handle user interruptions`
-- searches semantically over the active tenant
-- supports a similarity threshold so you can tighten or broaden the result set
-
-#### Duplicate Clusters
-
-Use this to find potential consolidation opportunities.
-
-This tab supports:
-- global clustering across the selected tenant slice
-- scoped clustering by category
-- scoped clustering by hierarchy
-- scoped clustering by prompt family
-- saved runs that can be reopened later
-- post-run filtering by category and hierarchy so you can narrow an existing run without recomputing it
-
-This is the best tab for understanding how the system behaves under different scopes and filters.
-
-#### Graph Explorer
-
-Use this to inspect how the active tenant is organized in the graph.
-
-The explorer lets you view:
-- the full tenant slice
-- category rollups
-- hierarchy-based slices
-- prompt-family structure
-
-It is useful for seeing:
-- how prompts sit under the shared layer hierarchy
-- how prompts roll into tenant-local categories
-- how prompt families behave like subcategory groupings
-- why a prompt might appear in a specific duplicate-analysis slice
-
-### Prompt Loading
-
-Load prompt JSON into the active tenant. The backend:
-- validates the payload
-- stores prompt documents in S3
-- writes prompt nodes and relationships into Neo4j
-- extracts prompt-family and variable metadata
-
-Local note:
-- if `PROMPT_S3_BUCKET` is unset, prompt documents are stored on local disk under `PROMPT_STORE_ROOT`
-- if `PROMPT_S3_BUCKET` is set, the same flow writes prompt documents to S3
-
-### Embeddings
-
-Embeddings are generated in the backend application and stored back onto prompt nodes in Neo4j.
-
-We intentionally moved embedding generation out of Neo4j server-side procedures so the runtime is portable and does not depend on Neo4j-specific model integrations.
-
-### Similar Prompts
-
-The UI can take a prompt id and return nearest matches. This is the required “find similar prompts given a prompt id” case-study flow.
-
-### Semantic Search
-
-The UI also supports free-text semantic search with a threshold. That gives operators control over how broad or strict the search should be.
-
-### Duplicate Clusters
-
-Duplicate analysis supports:
-- global clustering
-- scoped clustering by category
-- scoped clustering by hierarchy segment
-- scoped clustering by prompt family
-
-You can also:
-- save a run
-- reopen a run later
-- click a run and restore its saved clustering state
-- apply category and hierarchy filters to the visible cluster results in the UI
-
-### Graph Explorer
-
-The graph explorer is tenant-scoped and supports multiple views:
-- global
-- category
-- hierarchy
-- prompt family
-
-You can use it to see:
-- how prompts connect to the shared hierarchy
-- how they roll up into categories and families
-- how a tenant’s prompt slice is structured
-
-This is useful for debugging prompt organization, not just duplicate detection.
-
 ## Similarity Pipeline
 
 ### Variable Normalization
@@ -808,6 +666,148 @@ flowchart LR
     BE --> S3[(S3)]
     BE --> OpenAI[OpenAI API]
 ```
+
+## How The App Works
+
+### Tenants
+
+The UI has one active tenant at a time.
+
+Built-ins:
+- `12 Prompt Sample`
+- `Benchmark 1K`
+
+You can also create new empty tenants. Once selected, the tenant becomes app state and every prompt-scoped request is sent with `X-Tenant-Id`.
+
+### UI Walkthrough
+
+The UI is organized around six main tabs.
+
+#### Load Prompts
+
+Use this when you want to ingest data into the active tenant.
+
+You can:
+- paste a JSON array of prompts
+- upload a `.json` file from disk
+- validate the payload before writing anything
+- ingest validated prompts into Neo4j and the configured prompt-document store
+
+Good ways to test it:
+- select `12 Prompt Sample` or `Benchmark 1K` if you just want to explore existing data
+- create a new tenant if you want a clean workspace
+- upload [`tmp/benchmark-dataset-1000.json`](tmp/benchmark-dataset-1000.json) if you want to test large-tenant ingest yourself
+
+#### Generate Embeddings
+
+Use this after loading prompts into a tenant.
+
+This tab:
+- generates embeddings for all prompts in the active tenant or a selected subset
+- stores the vectors back onto prompt nodes in Neo4j
+- prepares the tenant for semantic search, similar-prompt lookup, and duplicate clustering
+
+#### Similar Prompts
+
+Use this to start from one known prompt id and inspect its nearest semantic neighbors.
+
+This is the quickest way to answer:
+- “what other prompts look like `verification.identity`?”
+- “did we accidentally create a near-duplicate under another family or category?”
+
+#### Semantic Search
+
+Use this when you know the meaning you want but not the prompt id.
+
+This tab:
+- accepts free text like `how to handle user interruptions`
+- searches semantically over the active tenant
+- supports a similarity threshold so you can tighten or broaden the result set
+
+#### Duplicate Clusters
+
+Use this to find potential consolidation opportunities.
+
+This tab supports:
+- global clustering across the selected tenant slice
+- scoped clustering by category
+- scoped clustering by hierarchy
+- scoped clustering by prompt family
+- saved runs that can be reopened later
+- post-run filtering by category and hierarchy so you can narrow an existing run without recomputing it
+
+This is the best tab for understanding how the system behaves under different scopes and filters.
+
+#### Graph Explorer
+
+Use this to inspect how the active tenant is organized in the graph.
+
+The explorer lets you view:
+- the full tenant slice
+- category rollups
+- hierarchy-based slices
+- prompt-family structure
+
+It is useful for seeing:
+- how prompts sit under the shared layer hierarchy
+- how prompts roll into tenant-local categories
+- how prompt families behave like subcategory groupings
+- why a prompt might appear in a specific duplicate-analysis slice
+
+### Prompt Loading
+
+Load prompt JSON into the active tenant. The backend:
+- validates the payload
+- stores prompt documents in S3
+- writes prompt nodes and relationships into Neo4j
+- extracts prompt-family and variable metadata
+
+Local note:
+- if `PROMPT_S3_BUCKET` is unset, prompt documents are stored on local disk under `PROMPT_STORE_ROOT`
+- if `PROMPT_S3_BUCKET` is set, the same flow writes prompt documents to S3
+
+### Embeddings
+
+Embeddings are generated in the backend application and stored back onto prompt nodes in Neo4j.
+
+We intentionally moved embedding generation out of Neo4j server-side procedures so the runtime is portable and does not depend on Neo4j-specific model integrations.
+
+### Similar Prompts
+
+The UI can take a prompt id and return nearest matches. This is the required “find similar prompts given a prompt id” case-study flow.
+
+### Semantic Search
+
+The UI also supports free-text semantic search with a threshold. That gives operators control over how broad or strict the search should be.
+
+### Duplicate Clusters
+
+Duplicate analysis supports:
+- global clustering
+- scoped clustering by category
+- scoped clustering by hierarchy segment
+- scoped clustering by prompt family
+
+You can also:
+- save a run
+- reopen a run later
+- click a run and restore its saved clustering state
+- apply category and hierarchy filters to the visible cluster results in the UI
+
+### Graph Explorer
+
+The graph explorer is tenant-scoped and supports multiple views:
+- global
+- category
+- hierarchy
+- prompt family
+
+You can use it to see:
+- how prompts connect to the shared hierarchy
+- how they roll up into categories and families
+- how a tenant’s prompt slice is structured
+
+This is useful for debugging prompt organization, not just duplicate detection.
 
 ## API Notes
 
