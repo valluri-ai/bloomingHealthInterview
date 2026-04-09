@@ -1,0 +1,65 @@
+{
+  "api_base_url": "http://127.0.0.1:8001",
+  "provider": "openai",
+  "model": "text-embedding-3-large",
+  "batch_size": 32,
+  "dataset": {
+    "requested_prompt_count": 1000,
+    "actual_prompt_count": 1000,
+    "seed": 7,
+    "prefix": "benchmark.taxonomy",
+    "profile": "taxonomy_balanced_v2",
+    "library_size_before": 1036,
+    "library_size_after": 1036,
+    "expected_duplicate_cluster_count": 50,
+    "semantic_query_count": 8
+  },
+  "ingestion": {
+    "elapsed_ms": 136078.77,
+    "prompts_per_second": 7.35,
+    "loaded_count": 1000
+  },
+  "embeddings": {
+    "elapsed_ms": 34485.94,
+    "prompts_per_second": 29.0,
+    "generated_count": 1000
+  },
+  "similar_search": {
+    "runs": 8,
+    "latency_ms": {
+      "count": 8,
+      "min_ms": 46.82508303085342,
+      "avg_ms": 59.01375524990726,
+      "p50_ms": 52.16012499295175,
+      "p95_ms": 109.27795898169279,
+      "max_ms": 109.27795898169279
+    },
+    "top1_hit_rate": 1.0,
+    "top3_hit_rate": 1.0
+  },
+  "semantic_search": {
+    "runs": 8,
+    "latency_ms": {
+      "count": 8,
+      "min_ms": 259.7102090367116,
+      "avg_ms": 338.2076719935867,
+      "p50_ms": 299.8107500025071,
+      "p95_ms": 510.61216596281156,
+      "max_ms": 510.61216596281156
+    },
+    "top3_hit_rate": 0.875
+  },
+  "duplicate_analysis": {
+    "elapsed_ms": 102353.36,
+    "cluster_count": 309,
+    "expected_cluster_recall": 0.86,
+    "threshold": 0.9,
+    "expected_cluster_count": 50,
+    "actual_cluster_count": 309,
+    "subset_cluster_recall": 0.86,
+    "exact_cluster_recall": 0.84,
+    "pairwise_precision": 0.465,
+    "pairwise_recall": 0.944,
+    "pairwise_f1": 0.624
+  }
+}
