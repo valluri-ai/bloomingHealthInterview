@@ -16,8 +16,6 @@ class SimilarityPair:
     shared_prompt_family: bool
     shared_layer_lineage: bool
     shared_variable_count: int
-    content_similarity: float
-    token_overlap: float
 
     @property
     def reciprocal(self) -> bool:
@@ -71,15 +69,11 @@ class StrictDuplicateClusterer:
             if not pair.reciprocal:
                 continue
 
-            if pair.average_score < average_floor:
+            if pair.shared_prompt_family:
+                admitted[key] = pair
                 continue
 
-            if pair.shared_prompt_family:
-                if pair.content_similarity < 0.45:
-                    continue
-                if pair.token_overlap < 0.13:
-                    continue
-                admitted[key] = pair
+            if pair.average_score < average_floor:
                 continue
 
             minimum_score = same_category_floor if pair.shared_category else cross_scope_floor

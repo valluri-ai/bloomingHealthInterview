@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import re
-from difflib import SequenceMatcher
 from typing import Any
 
 from app.repositories.prompt_repository import PromptGraphRepository
@@ -136,21 +134,5 @@ class DuplicateCandidateService:
                 shared_prompt_family=left.prompt_parent == right.prompt_parent,
                 shared_layer_lineage=bool(set(left.layer_lineage) & set(right.layer_lineage)),
                 shared_variable_count=len(set(left.input_variables) & set(right.input_variables)),
-                content_similarity=self._content_similarity(left.normalized_content, right.normalized_content),
-                token_overlap=self._token_overlap(left.normalized_content, right.normalized_content),
             )
         return pairs
-
-    def _content_similarity(self, left: str, right: str) -> float:
-        if left == right:
-            return 1.0
-        return SequenceMatcher(a=left.lower(), b=right.lower()).ratio()
-
-    def _token_overlap(self, left: str, right: str) -> float:
-        left_tokens = set(re.findall(r"[a-z0-9]+", left.lower()))
-        right_tokens = set(re.findall(r"[a-z0-9]+", right.lower()))
-        if not left_tokens and not right_tokens:
-            return 1.0
-        if not left_tokens or not right_tokens:
-            return 0.0
-        return len(left_tokens & right_tokens) / len(left_tokens | right_tokens)

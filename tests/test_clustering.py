@@ -288,7 +288,7 @@ def test_duplicate_cluster_analysis_rejects_transitive_chaining() -> None:
     )
 
 
-def test_duplicate_cluster_analysis_rejects_same_family_false_positive_pair() -> None:
+def test_duplicate_cluster_analysis_clusters_same_family_pairs_without_lexical_gates() -> None:
     repo = FakePromptRepository()
     repo.prompts["receptionist.workflow.alpha"] = _prompt(
         "receptionist.workflow.alpha",
@@ -364,7 +364,56 @@ def test_duplicate_cluster_analysis_rejects_same_family_false_positive_pair() ->
 
     cluster_members = {frozenset(prompt["prompt_id"] for prompt in cluster["prompts"]) for cluster in clusters}
     assert frozenset({"verification.dob", "verification.identity"}) in cluster_members
-    assert frozenset({"receptionist.workflow.alpha", "receptionist.workflow.beta"}) not in cluster_members
+    assert frozenset({"receptionist.workflow.alpha", "receptionist.workflow.beta"}) in cluster_members
+
+
+def test_duplicate_cluster_analysis_clusters_same_family_pairs_at_threshold_floor() -> None:
+    repo = FakePromptRepository()
+    repo.prompts["common.error_recovery"] = _prompt(
+        "common.error_recovery",
+        category="common",
+        normalized_content="If something goes wrong or the user seems confused, acknowledge the issue calmly.",
+        embedding=[1.0, 0.0],
+    )
+    repo.prompts["common.error_handling"] = _prompt(
+        "common.error_handling",
+        category="common",
+        normalized_content="When errors occur or confusion arises, remain calm and helpful.",
+        embedding=[0.99, 0.01],
+    )
+
+    repo.generated_candidates = [
+        {
+            "source_prompt_id": "common.error_recovery",
+            "target_prompt_id": "common.error_handling",
+            "similarity_score": 0.9069,
+            "rank": 1,
+            "shared_category": True,
+            "shared_prompt_family": True,
+            "shared_layer_lineage": True,
+            "shared_variable_count": 0,
+        },
+        {
+            "source_prompt_id": "common.error_handling",
+            "target_prompt_id": "common.error_recovery",
+            "similarity_score": 0.9069,
+            "rank": 1,
+            "shared_category": True,
+            "shared_prompt_family": True,
+            "shared_layer_lineage": True,
+            "shared_variable_count": 0,
+        },
+    ]
+
+    similarity = SimilarityService(repo)
+    analysis = ClusterAnalysisService(repo, similarity)
+
+    clusters = analysis.analyze_duplicates(threshold=0.9, ranker="rrf")
+
+    assert {
+        frozenset(prompt["prompt_id"] for prompt in cluster["prompts"])
+        for cluster in clusters
+    } == {frozenset({"common.error_recovery", "common.error_handling"})}
 
 
 def test_drilldown_groups_neighbors_by_layer_and_category() -> None:

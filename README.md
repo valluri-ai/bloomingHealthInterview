@@ -560,17 +560,82 @@ For every candidate pair we compute features like:
 - shared prompt family
 - shared layer lineage
 - shared variable count
-- normalized content similarity
-- token overlap
 
 ### Strict Admission
 
-Pairs are only admitted if they pass a stricter gate than normal search:
-- must clear the base threshold
-- must be reciprocal
-- must clear an average-score floor
-- prompt-family pairs must also clear content similarity and token overlap floors
-- cross-scope pairs require an even stricter floor
+The duplicate path is intentionally stricter than the search path.
+
+In plain English:
+
+1. A pair is ignored if its best similarity score is below the duplicate threshold
+2. A pair is ignored if the relationship is not reciprocal
+3. If the two prompts share the same prompt family, the pair is admitted immediately
+4. If they do not share a prompt family, they must also clear an average-score floor
+5. Cross-family pairs are then held to a stricter floor:
+   - same-category cross-family pairs need a slightly higher average score
+   - cross-category or cross-scope pairs need an even higher average score
+
+That gives the system a very explicit operating rule:
+- **same family is treated as authoritative duplicate evidence**
+- **outside a family, the system becomes conservative**
+
+This matches the product goal:
+- workflow variants inside a family should collapse together
+- unrelated prompts should not merge just because they share some boilerplate
+
+### Step-By-Step Duplicate Flow
+
+The duplicate pipeline is easiest to reason about as five concrete steps:
+
+1. **Filter the tenant slice**
+   - first apply the active tenant
+   - then optionally apply category and hierarchy filters
+   - this produces the allowed prompt set for the run
+
+2. **Generate nearest-neighbor candidates**
+   - use GDS KNN when available
+   - otherwise fall back to application-side similarity generation
+   - this avoids all-pairs comparison across the whole tenant
+
+3. **Build pair records**
+   - combine the forward and reverse matches into one pair record
+   - attach metadata like shared category, shared family, and shared layer lineage
+
+4. **Apply strict admission**
+   - this is the “should this edge count as duplicate evidence?” step
+   - same-family reciprocal pairs above threshold are admitted
+   - everything else must pass stricter cross-family gates
+
+5. **Assemble clusters with complete-link rules**
+   - start from the strongest admitted pairs
+   - only join a prompt into a cluster if it has an admitted edge to **every** member already inside
+   - only merge two clusters if **every** cross-pair between them is admitted
+
+That last rule is the most important safety mechanism in the whole design.
+
+### What That Means In Practice
+
+Situations the clusterer handles well:
+
+- **Same-family workflow variants**
+  - Example: `product.activation.workflow_01` and `product.activation.workflow_03`
+  - If they are reciprocal and above threshold, they cluster
+
+- **Same-family sample prompts**
+  - Example: `common.error_recovery` and `common.error_handling`
+  - These now cluster at `threshold=0.9` because they share the `common` family and are reciprocal above threshold
+
+- **Cross-family lookalikes**
+  - Example: two prompts in the same category with overlapping wording but different intent
+  - They only cluster if the relationship is strong enough in both directions and stays strong against the stricter cross-family floor
+
+- **Bridge-prompt chains**
+  - Example: `A` is close to `B`, and `B` is close to `C`, but `A` is not close enough to `C`
+  - They do **not** collapse into one cluster, because complete-link assembly requires every pair to be admitted
+
+- **One giant blob failure mode**
+  - This is what the naive connected-components version did
+  - The current clusterer avoids that because it does not allow transitive chaining by a single bridge edge
 
 ### Cluster Assembly
 
@@ -592,6 +657,35 @@ flowchart TD
     F --> G[Complete-link cluster assembly]
     G --> H[Persisted run + UI visualization]
 ```
+
+### Why This Is Safer Than Connected Components
+
+Here is the exact difference:
+
+Naive connected-components behavior:
+
+```text
+A ~ B
+B ~ C
+=> cluster(A, B, C)
+```
+
+Strict complete-link behavior:
+
+```text
+A ~ B
+B ~ C
+A !~ C
+=> no three-node cluster
+```
+
+So the current duplicate system is not saying:
+- “if there is any path between prompts, merge them”
+
+It is saying:
+- “a cluster is only valid if every prompt inside it is directly duplicate-admissible with every other prompt in that cluster”
+
+That is a much safer merge rule for prompt libraries.
 
 ## Clustering Scopes And Filters
 
