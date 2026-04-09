@@ -3,7 +3,7 @@
 Tenant-aware prompt intelligence for a layered voice AI prompt library.
 
 Live deployment:
-- UI + API: `http://Prompt-LoadB-yGISyWC2qKyo-1525484510.us-east-1.elb.amazonaws.com`
+- UI + API: [Blooming Health Prompt Admin](http://Prompt-LoadB-yGISyWC2qKyo-1525484510.us-east-1.elb.amazonaws.com)
 
 This project was built against the prompt-service case study:
 - generate embeddings for prompt templates
@@ -37,7 +37,7 @@ You can test the app in two ways:
 ### Fastest Way To Try It
 
 Open the deployed app:
-- `http://Prompt-LoadB-yGISyWC2qKyo-1525484510.us-east-1.elb.amazonaws.com`
+- [Blooming Health Prompt Admin](http://Prompt-LoadB-yGISyWC2qKyo-1525484510.us-east-1.elb.amazonaws.com)
 
 Then:
 1. In the `Workspace` card, select `Benchmark 1K · 1000 prompts`
@@ -69,7 +69,48 @@ The local UI behaves the same way:
 3. then paste prompt JSON or upload a `.json` file
 
 The repo already includes a ready-to-use benchmark file:
-- `tmp/benchmark-dataset-1000.json`
+- [`tmp/benchmark-dataset-1000.json`](tmp/benchmark-dataset-1000.json)
+
+## Product Tour
+
+If you just want to see the whole system working without loading your own data:
+1. open the [deployed app](http://Prompt-LoadB-yGISyWC2qKyo-1525484510.us-east-1.elb.amazonaws.com)
+2. in the `Workspace` card, select `Benchmark 1K · 1000 prompts`
+3. click through the tabs in order:
+   `Generate Embeddings` -> `Similar Prompts` -> `Semantic Search` -> `Duplicate Clusters` -> `Graph Explorer`
+
+If you want to test your own prompt set:
+1. click `Create tenant`
+2. switch into that new tenant
+3. use `Load Prompts` to paste JSON or upload a `.json` file
+4. generate embeddings
+5. run search and duplicate analysis inside that tenant
+
+### Screenshots
+
+Workspace and built-in tenant selection:
+
+![Workspace and tenant selection](docs/images/workspace-overview.png)
+
+Embedding generation from the prompt tree:
+
+![Embedding generation tree](docs/images/embeddings-tree.png)
+
+Prompt-to-prompt similarity lookup:
+
+![Similar prompts tab](docs/images/similar-prompts.png)
+
+Free-text semantic search with prompt preview:
+
+![Semantic search tab](docs/images/semantic-search.png)
+
+Saved duplicate-analysis runs with filters:
+
+![Duplicate clusters tab](docs/images/duplicate-clusters.png)
+
+Tenant graph exploration across hierarchy, category, and family structure:
+
+![Graph explorer tab](docs/images/graph-explorer.png)
 
 ## What The Service Covers
 
@@ -116,6 +157,10 @@ Copy the example file:
 ```bash
 cp .env.example .env
 ```
+
+Files:
+- [`.env.example`](.env.example)
+- [`scripts/start-local.sh`](scripts/start-local.sh)
 
 Fill in at least:
 
@@ -324,7 +369,7 @@ You can:
 Good ways to test it:
 - select `12 Prompt Sample` or `Benchmark 1K` if you just want to explore existing data
 - create a new tenant if you want a clean workspace
-- upload `tmp/benchmark-dataset-1000.json` if you want to test large-tenant ingest yourself
+- upload [`tmp/benchmark-dataset-1000.json`](tmp/benchmark-dataset-1000.json) if you want to test large-tenant ingest yourself
 
 #### Generate Embeddings
 

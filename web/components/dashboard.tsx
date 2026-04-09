@@ -556,12 +556,13 @@ export function Dashboard() {
         <div>
           <div className="simple-kicker">
             <SquareStack size={14} />
-            Prompt Similarity Service
+            Blooming Health Prompt Admin
           </div>
-          <h1>Five workflows. No noise.</h1>
+          <h1>Blooming Health Prompt Admin</h1>
           <p>
-            Load prompt JSON, generate embeddings from a prompt tree, inspect similar prompts,
-            run semantic search, and review duplicate clusters with simple scope filters.
+            Pick a tenant, kick the tires, upload prompts, chase down near-duplicates, and
+            peek at the graph when the prompt library starts acting suspicious. It is prompt
+            ops without the spreadsheet hangover.
           </p>
         </div>
         <div className="hero-controls">
