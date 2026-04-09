@@ -90,27 +90,27 @@ If you want to test your own prompt set:
 
 Workspace and built-in tenant selection:
 
-![Workspace and tenant selection](docs/images/workspace-overview.png)
+![Workspace and tenant selection](assets/workspace-overview.png)
 
 Embedding generation from the prompt tree:
 
-![Embedding generation tree](docs/images/embeddings-tree.png)
+![Embedding generation tree](assets/embeddings-tree.png)
 
 Prompt-to-prompt similarity lookup:
 
-![Similar prompts tab](docs/images/similar-prompts.png)
+![Similar prompts tab](assets/similar-prompts.png)
 
 Free-text semantic search with prompt preview:
 
-![Semantic search tab](docs/images/semantic-search.png)
+![Semantic search tab](assets/semantic-search.png)
 
 Saved duplicate-analysis runs with filters:
 
-![Duplicate clusters tab](docs/images/duplicate-clusters.png)
+![Duplicate clusters tab](assets/duplicate-clusters.png)
 
 Tenant graph exploration across hierarchy, category, and family structure:
 
-![Graph explorer tab](docs/images/graph-explorer.png)
+![Graph explorer tab](assets/graph-explorer.png)
 
 ## What The Service Covers
 
